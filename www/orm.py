@@ -152,7 +152,7 @@ class Model(dict, metaclass=ModelMetaclass):
         return getattr(self, key, None)
 
     def getValueOrDefault(self, key):
-        value = getattr(sself, key, None)
+        value = getattr(self, key, None)
         if value is None:
             field = self.__mappings__[key]
             if field.default is not None:
