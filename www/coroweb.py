@@ -112,7 +112,7 @@ class RequestHandler(object):
                     for k, v in parse.parse_qs(qs, True).items():
                         kw[k] = v[0]
         if kw is None:
-            kw = dict(**request_arg.match_info)
+            kw = dict(**request.match_info)
         else:
             if not self._has_var_kw_arg and self._named_kw_args:
                 # remove all unnamed kw:
@@ -163,7 +163,7 @@ def add_routes(app, module_name):
         name = module_name[n+1:]
         mod = getattr(__import__(module_name[:n],globals(), locals(), [name]), name)
     for attr in dir(mod):
-        if attr.startwith('_'):
+        if attr.startswith('_'):
             continue
         fn = getattr(mod, attr)
         if callable(fn):
