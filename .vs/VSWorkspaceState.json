@@ -1,7 +1,12 @@
 {
   "ExpandedNodes": [
     "",
-    "\\www"
+    "\\www",
+    "\\www\\static",
+    "\\www\\static\\css",
+    "\\www\\static\\js",
+    "\\www\\templates"
   ],
+  "SelectedNode": "\\www\\app.py",
   "PreviewInSolutionExplorer": false
 }
