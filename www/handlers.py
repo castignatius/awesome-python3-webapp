@@ -28,7 +28,7 @@ def user2cookie(user, max_age):
     expires = str(int(time.time() + max_age))
     s = '%s-%s-%s-%s' % (user.id, user.passwd, expires, _COOKIE_KEY)
     L = [user.id, expires, hashlib.sha1(s.encode('utf-8')).hexdigest()]
-    return '-'.join(L)
+    return '_'.join(L)
 
 async def cookie2user(cookie_str):
     '''
@@ -40,7 +40,7 @@ async def cookie2user(cookie_str):
         L = cookie_str.split('_')
         if len(L) != 3:
             return None
-        uid, expires, sh1 = L
+        uid, expires, sha1 = L
         if int(expires) < time.time():
             return None
         user = await User.find(uid)
@@ -67,7 +67,6 @@ def index(request):
     return {
         '__template__': 'blogs.html',
         'blogs': blogs,
-#        'user': request.__user__
     }
 
 @get('/register')
