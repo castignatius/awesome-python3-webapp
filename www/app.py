@@ -13,8 +13,12 @@ from datetime import datetime
 from aiohttp import web
 from jinja2 import Environment, FileSystemLoader
 
+from config import configs
+
 import orm
 from coroweb import add_routes, add_static
+
+from handlers import cookie2user, COOKIE_NAME
 
 def init_jinja2(app, **kw):
     logging.info('init jinja2...')
@@ -37,6 +41,7 @@ def init_jinja2(app, **kw):
             env.filters[name] = f
     app['__templating__'] = env
 
+#@web.middleware
 async def logger_factory(app, handler):
     async def logger(request):
         logging.info('Request: %s %s' % (request.method, request.path))
@@ -44,6 +49,23 @@ async def logger_factory(app, handler):
         return (await handler(request))
     return logger
 
+#@web.middleware
+async def auth_factory(app, handler):
+    async def auth(request):
+        logging.info('check user: %s %s' % (request.method, request.path))
+        request.__user__ = None
+        cookie_str = request.cookies.get(COOKIE_NAME)
+        if cookie_str:
+            user = await cookie2user(cookie_str)
+            if user:
+                logging.info('set current user: %s' % user.email)
+                request.__user__ = user
+        if request.path.startswith('/manage') and (request.__user__ is None or not request.__user__.admin):
+            return web.HTTPFound('/signin')
+        return (await handler(request))
+    return auth
+
+#@web.middleware
 async def data_factory(app, handler):
     async def parse_data(request):
         if request.method == 'Post':
@@ -56,6 +78,7 @@ async def data_factory(app, handler):
         return (await handler(request))
     return parse_data
 
+#@web.middleware
 async def response_factory(app, handler):
     async def response(request):
         logging.info('Response handler...')
@@ -109,7 +132,9 @@ def datetime_filter(t):
 
 async def init(loop):
     await orm.create_pool(loop=loop, host='127.0.0.1', port=3306, user='www-data', password='www-data', db='awesome')
-    app = web.Application(loop=loop, middlewares=[logger_factory, response_factory])
+    app = web.Application(loop=loop, middlewares=[
+        logger_factory, auth_factory, response_factory
+    ])
     init_jinja2(app, filters=dict(datetime=datetime_filter))
     add_routes(app, 'handlers')
     add_static(app)
@@ -121,8 +146,22 @@ loop = asyncio.get_event_loop()
 loop.run_until_complete(init(loop))
 loop.run_forever()
 
-#async def index(request):
-#    return web.Response(body=b'<h1>Awesome</h1>', content_type='text/html')
+## 以下尝试用run_app
+#async def init(loop):
+#    await orm.create_pool(loop=loop, host='127.0.0.1', port=3306, user='www-data', password='www-data', db='awesome')
+#    app = web.Application()
+#    app.middlewares.append(logger_factory)
+#    app.middlewares.append(auth_factory)
+#    app.middlewares.append(response_factory)
+#    init_jinja2(app, filters=dict(datetime=datetime_filter))
+#    add_routes(app, 'handlers')
+#    add_static(app)
+#    return app
+
+#loop = asyncio.get_event_loop()
+#app = loop.run_until_complete(init(loop))
+#web.run_app(app, host='127.0.0.1', port='9000')
+#logging.info('server started at http://127.0.0.1:9000...')
 
 ##async def init(loop):
 ##    app = web.Application(loop=loop)
