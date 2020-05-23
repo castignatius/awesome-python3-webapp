@@ -3,6 +3,8 @@
 
 __author__ = ''
 
+'提升开发效率，debug模式'
+
 import os, sys, time, subprocess
 
 from watchdog.observers import Observer
@@ -59,7 +61,7 @@ def start_watch(path, callback):
 if __name__ == '__main__':
     argv = sys.argv[1:]
     if not argv:
-        print('Usage: ./pymonitor your-script.py')
+        print('Usage: python pymonitor.py app.py')
         exit(0)
     if argv[0] != 'python':
         argv.insert(0, 'python')

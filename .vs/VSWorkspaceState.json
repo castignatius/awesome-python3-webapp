@@ -7,6 +7,6 @@
     "\\www\\static\\js",
     "\\www\\templates"
   ],
-  "SelectedNode": "\\www\\templates\\manage_blog_edit.html",
+  "SelectedNode": "\\www\\handlers.py",
   "PreviewInSolutionExplorer": false
 }
